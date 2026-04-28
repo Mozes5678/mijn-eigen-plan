@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mijn Eigen Plan — De Schaapskooi Stellendam</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f5f5f0;
+    color: #2d2d2d;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  .app {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #c8c8c3;
+    overflow: hidden;
+  }
+
+  /* === HEADER === */
+  .top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    background: white;
+    border-bottom: 1px solid #e5e5e0;
+  }
+  .mode-switch {
+    display: flex;
+    gap: 8px;
+  }
+  .mode-btn {
+    padding: 8px 16px;
+    border: 2px solid #c8c8c3;
+    background: white;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-btn:hover { background: #f5f5f0; }
+  .mode-btn.active {
+    background: #2d6cdf;
+    color: white;
+    border-color: #2d6cdf;
+  }
+  .clock-big {
+    background: #fff0d0;
+    border: 2px solid #f0a030;
+    border-radius: 12px;
+    padding: 8px 20px;
+    text-align: center;
+  }
+  .clock-big .time { font-size: 32px; font-weight: 700; color: #c07000; line-height: 1; }
+  .clock-big .label { font-size: 11px; color: #5a4020; margin-top: 2px; }
+
+  /* === BEWONER SELECTOR === */
+  .bewoner-selector {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    background: #fafaf5;
+    overflow-x: auto;
+    border-bottom: 1px solid #e5e5e0;
+  }
+  .bewoner-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px 8px 8px;
+    background: white;
+    border: 2px solid #c8c8c3;
+    border-radius: 50px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+  .bewoner-card:hover { border-color: #2d6cdf; }
+  .bewoner-card.active {
+    background: #2d6cdf;
+    color: white;
+    border-color: #2d6cdf;
+  }
+  .bewoner-foto {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffd6a5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    border: 2px solid white;
+  }
+  .bewoner-card .naam { font-weight: 600; font-size: 16px; }
+
+  /* === HELLO HEADER === */
+  .greeting {
+    padding: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e5e0;
+  }
+  .greeting-left { display: flex; align-items: center; gap: 16px; }
+  .greeting-foto {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #ffd6a5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 44px;
+    border: 3px solid #f0a030;
+  }
+  .greeting h1 { font-size: 36px; font-weight: 700; color: #2d2d2d; }
+  .greeting .date { color: #707070; font-size: 16px; margin-top: 4px; }
+
+  /* === VOORTGANGSBALK === */
+  .progress-section {
+    padding: 16px 24px;
+    border-bottom: 1px solid #e5e5e0;
+  }
+  .progress-bar-wrap {
+    position: relative;
+    height: 32px;
+    margin: 0 24px;
+  }
+  .progress-bar-bg {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    right: 0;
+    height: 12px;
+    background: #e0e0db;
+    border-radius: 6px;
+  }
+  .progress-bar-fill {
+    position: absolute;
+    top: 12px;
+    left: 0;
+    height: 12px;
+    background: #f0a030;
+    border-radius: 6px;
+    transition: width 0.5s;
+  }
+  .progress-marker {
+    position: absolute;
+    top: 0;
+    transform: translateX(-50%);
+    text-align: center;
+    transition: left 0.5s;
+  }
+  .progress-marker .label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #c07000;
+  }
+  .progress-marker .arrow {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #c07000;
+    margin: 2px auto 0;
+  }
+  .progress-times {
+    display: flex;
+    justify-content: space-between;
+    margin: 8px 24px 0;
+    font-size: 12px;
+    color: #707070;
+  }
+
+  /* === TAAK GRID === */
+  .taken-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    padding: 24px;
+  }
+  .taak-card {
+    background: #f5f5f0;
+    border: 3px solid #d0d0c8;
+    border-radius: 16px;
+    padding: 16px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    position: relative;
+  }
+  .taak-card:hover { transform: translateY(-2px); }
+  .taak-card.klaar {
+    background: #dff0dc;
+    border-color: #289050;
+  }
+  .taak-card.nu {
+    background: #fff0d0;
+    border-color: #f0a030;
+    box-shadow: 0 0 0 4px rgba(240, 160, 48, 0.2);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(240, 160, 48, 0.2); }
+    50% { box-shadow: 0 0 0 8px rgba(240, 160, 48, 0.1); }
+  }
+  .taak-tijd {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .taak-card.klaar .taak-tijd { color: #186030; }
+  .taak-card.nu .taak-tijd { color: #c07000; }
+  .taak-card.komt .taak-tijd { color: #707070; }
+
+  .taak-picto {
+    background: #1a1a1a;
+    border-radius: 8px;
+    padding: 8px;
+    margin: 0 auto 8px;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .taak-picto svg { width: 70px; height: 70px; }
+  .taak-picto .picto-label {
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 2px;
+    text-transform: lowercase;
+  }
+  .taak-naam {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .taak-card.klaar .taak-naam { color: #186030; }
+  .taak-card.komt .taak-naam { color: #707070; }
+  .taak-status {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .taak-card.klaar .taak-status {
+    background: #289050;
+    color: white;
+  }
+  .taak-card.nu .taak-status {
+    background: #f0a030;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .taak-card.komt .taak-status {
+    border: 2px solid #d0d0c8;
+  }
+
+  /* === HULPKNOPPEN === */
+  .actie-knoppen {
+    display: flex;
+    gap: 12px;
+    padding: 0 24px 24px;
+    flex-wrap: wrap;
+  }
+  .actie-btn {
+    flex: 1;
+    min-width: 180px;
+    padding: 16px;
+    border: 2px solid;
+    border-radius: 12px;
+    background: white;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.15s;
+  }
+  .actie-btn:hover { transform: translateY(-1px); }
+  .actie-btn.hulp { border-color: #2d6cdf; color: #2d6cdf; background: #e8f0ff; }
+  .actie-btn.bellen { border-color: #c84040; color: #c84040; background: #ffe8e8; }
+  .actie-btn.voorlezen { border-color: #289050; color: #186030; background: #dff0dc; }
+
+  /* === EMOTIE === */
+  .emotie-section {
+    padding: 24px;
+    border-top: 1px solid #e5e5e0;
+    background: #fafaf5;
+  }
+  .emotie-section h3 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .emoties-rij {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .emotie-knop {
+    background: none;
+    border: 3px solid transparent;
+    border-radius: 16px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .emotie-knop:hover { transform: scale(1.05); }
+  .emotie-knop.geselecteerd {
+    border-color: #2d6cdf;
+    background: white;
+  }
+  .emotie-cirkel {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    border: 3px solid #2d2d2d;
+  }
+  .emotie-knop .label {
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .emotie-bedankt {
+    text-align: center;
+    margin-top: 16px;
+    padding: 12px;
+    background: #dff0dc;
+    border-radius: 10px;
+    color: #186030;
+    font-weight: 600;
+    display: none;
+  }
+  .emotie-bedankt.zichtbaar { display: block; }
+
+  /* === MODAL === */
+  .modal-bg {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  .modal-bg.zichtbaar { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-header {
+    padding: 24px;
+    border-bottom: 1px solid #e5e5e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .modal-titel { font-size: 24px; font-weight: 700; }
+  .modal-close {
+    background: #f5f5f0;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .modal-body { padding: 24px; }
+  .modal-actions { padding: 16px 24px; border-top: 1px solid #e5e5e0; display: flex; gap: 8px; flex-wrap: wrap; }
+  .modal-actions button {
+    flex: 1;
+    min-width: 140px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 2px solid;
+    cursor: pointer;
+  }
+  .btn-primair { background: #289050; color: white; border-color: #289050; }
+  .btn-primair:hover { background: #186030; }
+  .btn-secundair { background: white; color: #2d6cdf; border-color: #2d6cdf; }
+  .btn-voorlezen { background: white; color: #289050; border-color: #289050; }
+
+  /* === STAPPENPLAN === */
+  .stap {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    margin-bottom: 8px;
+    background: #f5f5f0;
+    border-radius: 12px;
+    border: 2px solid #d0d0c8;
+  }
+  .stap.gedaan {
+    background: #dff0dc;
+    border-color: #289050;
+  }
+  .stap-nr {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #d0d0c8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .stap.gedaan .stap-nr {
+    background: #289050;
+    color: white;
+    border-color: #289050;
+  }
+  .stap-picto {
+    background: #1a1a1a;
+    border-radius: 6px;
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stap-picto svg { width: 50px; height: 50px; }
+  .stap-tekst { flex: 1; font-size: 16px; font-weight: 600; }
+  .stap-checkbox {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #d0d0c8;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .stap.gedaan .stap-checkbox {
+    background: #289050;
+    border-color: #289050;
+    color: white;
+    font-size: 18px;
+  }
+
+  /* === AFTELKLOK === */
+  .timer-display {
+    text-align: center;
+    padding: 24px;
+    background: #fff0d0;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .timer-tijd {
+    font-size: 64px;
+    font-weight: 700;
+    color: #c07000;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .timer-label {
+    font-size: 14px;
+    color: #5a4020;
+    margin-top: 8px;
+  }
+
+  /* === BEGELEIDER PANEL === */
+  .begeleider-panel {
+    padding: 24px;
+    background: #fffbe6;
+    border-bottom: 1px solid #e5e5e0;
+  }
+  .begeleider-panel h2 { margin-bottom: 16px; }
+  .form-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 100px 60px;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+  .form-row input, .form-row select {
+    padding: 8px;
+    border: 1px solid #c8c8c3;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+  }
+  .form-row .verwijder {
+    background: #c84040;
+    color: white;
+    border: none;
+    padding: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .toevoegen-btn {
+    padding: 10px 16px;
+    background: #289050;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-top: 8px;
+  }
+  .reset-btn {
+    padding: 10px 16px;
+    background: white;
+    color: #c84040;
+    border: 2px solid #c84040;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    margin-top: 8px;
+    margin-left: 8px;
+  }
+
+  .footer {
+    padding: 16px 24px;
+    text-align: center;
+    color: #707070;
+    font-size: 13px;
+    border-top: 1px solid #e5e5e0;
+  }
+
+  /* Verbergen */
+  .hidden { display: none !important; }
+
+  @media (max-width: 600px) {
+    .greeting h1 { font-size: 26px; }
+    .greeting-foto { width: 60px; height: 60px; font-size: 32px; }
+    .clock-big .time { font-size: 22px; }
+    .form-row { grid-template-columns: 1fr; }
+    .top-bar { flex-direction: column; gap: 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- TOP BAR met modus-keuze -->
+  <div class="top-bar">
+    <div class="mode-switch">
+      <button class="mode-btn active" data-mode="bewoner">Bewoner</button>
+      <button class="mode-btn" data-mode="begeleider">Begeleider</button>
+    </div>
+    <div class="clock-big">
+      <div class="time" id="huidige-tijd">--:--</div>
+      <div class="label">het is nu</div>
+    </div>
+  </div>
+
+  <!-- BEWONER SELECTOR -->
+  <div class="bewoner-selector" id="bewoner-selector"></div>
+
+  <!-- BEGELEIDER PANEL (alleen zichtbaar in begeleider-modus) -->
+  <div class="begeleider-panel hidden" id="begeleider-panel">
+    <h2>Taken bewerken voor <span id="begeleider-bewonernaam"></span></h2>
+    <p style="color: #707070; margin-bottom: 16px; font-size: 14px;">Pas hier de taken aan. Wijzigingen worden automatisch opgeslagen.</p>
+    <div id="taken-bewerker"></div>
+    <button class="toevoegen-btn" id="taak-toevoegen-btn">+ Nieuwe taak toevoegen</button>
+    <button class="reset-btn" id="reset-btn">Alle data wissen</button>
+  </div>
+
+  <!-- BEWONER SCHERM -->
+  <div id="bewoner-scherm">
+    <div class="greeting">
+      <div class="greeting-left">
+        <div class="greeting-foto" id="greet-foto">👤</div>
+        <div>
+          <h1 id="greet-naam">Hallo!</h1>
+          <div class="date" id="greet-datum"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-bg"></div>
+        <div class="progress-bar-fill" id="progress-fill"></div>
+        <div class="progress-marker" id="progress-marker">
+          <div class="label">nu</div>
+          <div class="arrow"></div>
+        </div>
+      </div>
+      <div class="progress-times">
+        <span>08:00</span><span>20:00</span>
+      </div>
+    </div>
+
+    <div class="taken-grid" id="taken-grid"></div>
+
+    <div class="actie-knoppen">
+      <button class="actie-btn voorlezen" id="voorlees-btn">
+        🔊 Lees voor wat ik moet doen
+      </button>
+      <button class="actie-btn hulp">❓ Hulp nodig</button>
+      <button class="actie-btn bellen">📞 Bel begeleider</button>
+    </div>
+
+    <div class="emotie-section">
+      <h3>Hoe voel jij je nu?</h3>
+      <div class="emoties-rij" id="emoties-rij"></div>
+      <div class="emotie-bedankt" id="emotie-bedankt">Bedankt! Je gevoel is opgeslagen.</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Mijn Eigen Plan — voorbeeld voor De Schaapskooi Stellendam
+  </div>
+</div>
+
+<!-- TAAK MODAL -->
+<div class="modal-bg" id="taak-modal-bg">
+  <div class="modal" id="taak-modal">
+    <div class="modal-header">
+      <div class="modal-titel" id="modal-titel">Taak</div>
+      <button class="modal-close" id="modal-close-btn">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-actions" id="modal-acties"></div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   STARTGEGEVENS - bewoners + taken (worden opgeslagen in localStorage)
+   ========================================================= */
+const STARTGEGEVENS = {
+  bewoners: [
+    {
+      id: 'marieke',
+      naam: 'Marieke',
+      emoji: '👧',
+      taken: [
+        { id: 't1', tijd: '08:00', naam: 'Tandenpoetsen', picto: 'tanden', stappen: [
+          { tekst: 'Pak de tandenborstel', picto: 'tanden' },
+          { tekst: 'Doe tandpasta op de borstel', picto: 'tandpasta' },
+          { tekst: 'Poets 2 minuten', picto: 'tanden' },
+          { tekst: 'Spoel je mond met water', picto: 'water' }
+        ]},
+        { id: 't2', tijd: '08:30', naam: 'Ontbijten', picto: 'ontbijt', stappen: [
+          { tekst: 'Smeer een boterham', picto: 'ontbijt' },
+          { tekst: 'Pak een glas water of melk', picto: 'water' },
+          { tekst: 'Eet aan tafel', picto: 'eten' }
+        ]},
+        { id: 't3', tijd: '10:30', naam: 'Was doen', picto: 'wassen', stappen: [
+          { tekst: 'Pak de waszak uit je kamer', picto: 'wassen' },
+          { tekst: 'Doe de was in de wasmachine', picto: 'wassen' },
+          { tekst: 'Doe een waspod erin', picto: 'water' },
+          { tekst: 'Zet de wasmachine aan', picto: 'wassen' }
+        ]},
+        { id: 't4', tijd: '12:00', naam: 'Lunchen', picto: 'eten', stappen: [
+          { tekst: 'Was je handen', picto: 'water' },
+          { tekst: 'Help met tafel dekken', picto: 'eten' },
+          { tekst: 'Eet rustig aan tafel', picto: 'eten' }
+        ]},
+        { id: 't5', tijd: '12:30', naam: 'Wandelen', picto: 'wandelen', stappen: [
+          { tekst: 'Doe je jas aan', picto: 'kleren' },
+          { tekst: 'Doe je schoenen aan', picto: 'kleren' },
+          { tekst: 'Loop rondje met begeleider', picto: 'wandelen' }
+        ]},
+        { id: 't6', tijd: '14:00', naam: 'Rusten', picto: 'rust', stappen: [
+          { tekst: 'Ga naar je kamer', picto: 'rust' },
+          { tekst: 'Lees een boekje of luister muziek', picto: 'rust' },
+          { tekst: 'Rust 30 minuten', picto: 'rust' }
+        ]},
+        { id: 't7', tijd: '17:30', naam: 'Avondeten', picto: 'avondeten', stappen: [
+          { tekst: 'Was je handen', picto: 'water' },
+          { tekst: 'Help met tafel dekken', picto: 'eten' },
+          { tekst: 'Eet samen aan tafel', picto: 'avondeten' }
+        ]}
+      ]
+    },
+    {
+      id: 'tim',
+      naam: 'Tim',
+      emoji: '👦',
+      taken: [
+        { id: 't1', tijd: '08:00', naam: 'Wakker worden', picto: 'rust', stappen: [
+          { tekst: 'Stap uit bed', picto: 'rust' },
+          { tekst: 'Doe de gordijnen open', picto: 'ontbijt' }
+        ]},
+        { id: 't2', tijd: '08:30', naam: 'Aankleden', picto: 'kleren', stappen: [
+          { tekst: 'Pak je kleren uit de kast', picto: 'kleren' },
+          { tekst: 'Trek je shirt aan', picto: 'kleren' },
+          { tekst: 'Trek je broek aan', picto: 'kleren' }
+        ]},
+        { id: 't3', tijd: '09:00', naam: 'Ontbijten', picto: 'ontbijt', stappen: [
+          { tekst: 'Pak een bord en mes', picto: 'eten' },
+          { tekst: 'Smeer een boterham', picto: 'ontbijt' },
+          { tekst: 'Eet aan tafel', picto: 'eten' }
+        ]},
+        { id: 't4', tijd: '10:00', naam: 'Boodschappen doen', picto: 'winkel', stappen: [
+          { tekst: 'Pak je tas', picto: 'winkel' },
+          { tekst: 'Loop met begeleider naar winkel', picto: 'wandelen' },
+          { tekst: 'Pak de spullen van de lijst', picto: 'winkel' },
+          { tekst: 'Reken af bij de kassa', picto: 'winkel' }
+        ]},
+        { id: 't5', tijd: '12:00', naam: 'Lunchen', picto: 'eten', stappen: [
+          { tekst: 'Was je handen', picto: 'water' },
+          { tekst: 'Eet aan tafel', picto: 'eten' }
+        ]},
+        { id: 't6', tijd: '13:30', naam: 'Afwassen', picto: 'afwassen', stappen: [
+          { tekst: 'Pak de afwasspons', picto: 'afwassen' },
+          { tekst: 'Was de borden', picto: 'afwassen' },
+          { tekst: 'Spoel ze af met water', picto: 'water' },
+          { tekst: 'Zet ze in de kast', picto: 'afwassen' }
+        ]},
+        { id: 't7', tijd: '17:30', naam: 'Avondeten', picto: 'avondeten', stappen: [
+          { tekst: 'Was je handen', picto: 'water' },
+          { tekst: 'Help met tafel dekken', picto: 'eten' },
+          { tekst: 'Eet rustig', picto: 'avondeten' }
+        ]}
+      ]
+    },
+    {
+      id: 'sanne',
+      naam: 'Sanne',
+      emoji: '👩',
+      taken: [
+        { id: 't1', tijd: '08:30', naam: 'Tandenpoetsen', picto: 'tanden', stappen: [
+          { tekst: 'Pak de tandenborstel', picto: 'tanden' },
+          { tekst: 'Poets 2 minuten', picto: 'tanden' },
+          { tekst: 'Spoel je mond', picto: 'water' }
+        ]},
+        { id: 't2', tijd: '09:00', naam: 'Ontbijten', picto: 'ontbijt', stappen: [
+          { tekst: 'Smeer een boterham', picto: 'ontbijt' },
+          { tekst: 'Eet aan tafel', picto: 'eten' }
+        ]},
+        { id: 't3', tijd: '10:00', naam: 'Dagbesteding', picto: 'wandelen', stappen: [
+          { tekst: 'Pak je tas', picto: 'winkel' },
+          { tekst: 'Loop naar de dagbesteding', picto: 'wandelen' }
+        ]},
+        { id: 't4', tijd: '12:00', naam: 'Lunchen', picto: 'eten', stappen: [
+          { tekst: 'Was je handen', picto: 'water' },
+          { tekst: 'Eet aan tafel', picto: 'eten' }
+        ]},
+        { id: 't5', tijd: '14:00', naam: 'Kamer opruimen', picto: 'kleren', stappen: [
+          { tekst: 'Ruim je kleren op', picto: 'kleren' },
+          { tekst: 'Maak het bed op', picto: 'rust' }
+        ]},
+        { id: 't6', tijd: '15:30', naam: 'Wandelen', picto: 'wandelen', stappen: [
+          { tekst: 'Doe je jas aan', picto: 'kleren' },
+          { tekst: 'Loop een rondje', picto: 'wandelen' }
+        ]},
+        { id: 't7', tijd: '17:30', naam: 'Avondeten', picto: 'avondeten', stappen: [
+          { tekst: 'Was je handen', picto: 'water' },
+          { tekst: 'Eet aan tafel', picto: 'avondeten' }
+        ]}
+      ]
+    }
+  ]
+};
+
+/* =========================================================
+   SCLERA PICTO BIBLIOTHEEK (SVG, wit op zwart)
+   ========================================================= */
+const PICTOS = {
+  tanden: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <rect x="20" y="40" width="60" height="20" rx="2"/>
+    <rect x="65" y="35" width="20" height="30" rx="2" fill="white"/>
+    <line x1="68" y1="35" x2="68" y2="28"/><line x1="73" y1="35" x2="73" y2="28"/>
+    <line x1="78" y1="35" x2="78" y2="28"/><line x1="83" y1="35" x2="83" y2="28"/>
+    <path d="M 35 25 L 45 15 L 55 15 L 65 25 L 60 35 L 40 35 Z"/>
+  </svg>`,
+  tandpasta: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <rect x="20" y="35" width="55" height="25" rx="3"/>
+    <rect x="75" y="40" width="10" height="15" rx="2" fill="white"/>
+    <path d="M 50 47 Q 55 45 60 47" stroke-width="4"/>
+  </svg>`,
+  ontbijt: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <ellipse cx="50" cy="60" rx="35" ry="10"/>
+    <ellipse cx="50" cy="58" rx="28" ry="7"/>
+    <rect x="35" y="40" width="30" height="15" rx="2"/>
+    <rect x="20" y="35" width="20" height="20"/>
+    <path d="M 25 30 Q 23 25 25 20 M 30 30 Q 28 25 30 20 M 35 30 Q 33 25 35 20"/>
+  </svg>`,
+  wassen: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <rect x="20" y="20" width="60" height="65" rx="3"/>
+    <line x1="20" y1="35" x2="80" y2="35"/>
+    <circle cx="30" cy="28" r="2.5" fill="white"/>
+    <circle cx="40" cy="28" r="2.5" fill="white"/>
+    <rect x="65" y="25" width="10" height="6"/>
+    <circle cx="50" cy="60" r="18"/>
+    <circle cx="50" cy="60" r="12"/>
+  </svg>`,
+  eten: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <ellipse cx="50" cy="55" rx="28" ry="10"/>
+    <ellipse cx="50" cy="53" rx="22" ry="7"/>
+    <line x1="20" y1="30" x2="20" y2="55"/>
+    <line x1="17" y1="30" x2="17" y2="40"/>
+    <line x1="23" y1="30" x2="23" y2="40"/>
+    <line x1="80" y1="30" x2="80" y2="55"/>
+    <path d="M 76 30 L 84 30 L 84 45 L 76 45 Z" fill="white"/>
+  </svg>`,
+  avondeten: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <ellipse cx="50" cy="55" rx="30" ry="10"/>
+    <ellipse cx="50" cy="53" rx="24" ry="7"/>
+    <circle cx="40" cy="50" r="4"/><circle cx="50" cy="50" r="4"/>
+    <rect x="55" y="46" width="12" height="8"/>
+    <line x1="20" y1="30" x2="20" y2="55"/>
+    <line x1="80" y1="30" x2="80" y2="55"/>
+  </svg>`,
+  wandelen: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <circle cx="50" cy="22" r="8"/>
+    <line x1="50" y1="30" x2="48" y2="55"/>
+    <line x1="48" y1="40" x2="35" y2="48"/>
+    <line x1="48" y1="40" x2="62" y2="55"/>
+    <line x1="48" y1="55" x2="38" y2="78"/>
+    <line x1="48" y1="55" x2="62" y2="75"/>
+    <line x1="38" y1="78" x2="32" y2="78"/>
+    <line x1="62" y1="75" x2="68" y2="75"/>
+  </svg>`,
+  rust: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <rect x="15" y="55" width="70" height="20" rx="2"/>
+    <rect x="20" y="45" width="25" height="15" rx="2"/>
+    <circle cx="32" cy="50" r="5"/>
+    <text x="60" y="40" fill="white" font-size="18" font-weight="700" stroke="none">Z</text>
+    <text x="72" y="32" fill="white" font-size="14" font-weight="700" stroke="none">Z</text>
+    <text x="80" y="26" fill="white" font-size="10" font-weight="700" stroke="none">z</text>
+  </svg>`,
+  winkel: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <path d="M 20 30 L 75 30 L 70 65 L 30 65 Z"/>
+    <line x1="25" y1="45" x2="72" y2="45"/>
+    <line x1="35" y1="30" x2="38" y2="65"/>
+    <line x1="50" y1="30" x2="50" y2="65"/>
+    <line x1="65" y1="30" x2="62" y2="65"/>
+    <path d="M 15 20 L 25 20 L 25 30"/>
+    <circle cx="38" cy="78" r="6"/>
+    <circle cx="62" cy="78" r="6"/>
+  </svg>`,
+  afwassen: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <path d="M 20 50 L 80 50 L 75 78 L 25 78 Z"/>
+    <path d="M 28 60 Q 40 64 50 60 Q 60 64 72 60" stroke-width="2"/>
+    <rect x="46" y="20" width="8" height="22"/>
+    <line x1="50" y1="20" x2="50" y2="10"/>
+    <line x1="40" y1="10" x2="60" y2="10"/>
+    <ellipse cx="62" cy="48" rx="10" ry="3"/>
+  </svg>`,
+  kleren: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <path d="M 25 30 L 35 22 L 42 25 L 58 25 L 65 22 L 75 30 L 70 42 L 62 38 L 62 78 L 38 78 L 38 38 L 30 42 Z"/>
+  </svg>`,
+  water: `<svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="3">
+    <path d="M 50 20 Q 30 50 30 65 Q 30 78 50 78 Q 70 78 70 65 Q 70 50 50 20 Z"/>
+    <path d="M 38 60 Q 40 68 48 70" stroke-width="2"/>
+  </svg>`
+};
+
+const PICTO_OPTIES = ['tanden', 'tandpasta', 'ontbijt', 'wassen', 'eten', 'avondeten', 'wandelen', 'rust', 'winkel', 'afwassen', 'kleren', 'water'];
+
+/* =========================================================
+   STORAGE
+   ========================================================= */
+const STORAGE_KEY = 'mijn-eigen-plan-data';
+
+function laadGegevens() {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    if (data) {
+      const parsed = JSON.parse(data);
+      // Zorg dat structuur klopt
+      if (parsed.bewoners && parsed.bewoners.length > 0) return parsed;
+    }
+  } catch (e) { console.warn('Kon gegevens niet laden:', e); }
+  return JSON.parse(JSON.stringify(STARTGEGEVENS));
+}
+
+function bewaarGegevens() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) { console.warn('Kon gegevens niet bewaren:', e); }
+}
+
+function laadDagState() {
+  try {
+    const today = new Date().toDateString();
+    const raw = localStorage.getItem('mijn-eigen-plan-dag-' + today);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { afgevinkt: {}, stappen: {}, emoties: {} };
+}
+
+function bewaarDagState() {
+  try {
+    const today = new Date().toDateString();
+    localStorage.setItem('mijn-eigen-plan-dag-' + today, JSON.stringify(dagState));
+  } catch (e) {}
+}
+
+/* =========================================================
+   STATE
+   ========================================================= */
+let state = laadGegevens();
+let dagState = laadDagState();
+let huidigeBewoner = state.bewoners[0].id;
+let modus = 'bewoner'; // 'bewoner' of 'begeleider'
+let actieveTimerInterval = null;
+
+function getBewoner() {
+  return state.bewoners.find(b => b.id === huidigeBewoner);
+}
+
+/* =========================================================
+   TIJD HELPERS
+   ========================================================= */
+function huidigeTijdMin() {
+  const nu = new Date();
+  return nu.getHours() * 60 + nu.getMinutes();
+}
+
+function tijdNaarMin(tijdStr) {
+  const [u, m] = tijdStr.split(':').map(Number);
+  return u * 60 + m;
+}
+
+function minNaarTijd(min) {
+  const u = Math.floor(min / 60);
+  const m = min % 60;
+  return String(u).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+}
+
+function getTaakStatus(taak) {
+  const taakKey = huidigeBewoner + '-' + taak.id;
+  if (dagState.afgevinkt[taakKey]) return 'klaar';
+
+  const nu = huidigeTijdMin();
+  const taakStart = tijdNaarMin(taak.tijd);
+
+  // Vind volgende taak
+  const taken = getBewoner().taken.slice().sort((a,b) => tijdNaarMin(a.tijd) - tijdNaarMin(b.tijd));
+  const idx = taken.findIndex(t => t.id === taak.id);
+  const volgende = taken[idx + 1];
+  const taakEind = volgende ? tijdNaarMin(volgende.tijd) : taakStart + 60;
+
+  if (nu >= taakStart && nu < taakEind) return 'nu';
+  if (nu < taakStart) return 'komt';
+  return 'gemist'; // tijd voorbij maar niet afgevinkt
+}
+
+/* =========================================================
+   RENDER FUNCTIES
+   ========================================================= */
+function updateKlok() {
+  const nu = new Date();
+  const tijd = String(nu.getHours()).padStart(2, '0') + ':' + String(nu.getMinutes()).padStart(2, '0');
+  const el = document.getElementById('huidige-tijd');
+  if (el) el.textContent = tijd;
+  updateVoortgang();
+}
+
+function updateVoortgang() {
+  const nu = huidigeTijdMin();
+  const start = 8 * 60;
+  const eind = 20 * 60;
+  let pct = Math.max(0, Math.min(100, ((nu - start) / (eind - start)) * 100));
+  const fill = document.getElementById('progress-fill');
+  const marker = document.getElementById('progress-marker');
+  if (fill) fill.style.width = pct + '%';
+  if (marker) marker.style.left = pct + '%';
+}
+
+function renderBewonerSelector() {
+  const cont = document.getElementById('bewoner-selector');
+  cont.innerHTML = '';
+  state.bewoners.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'bewoner-card' + (b.id === huidigeBewoner ? ' active' : '');
+    card.innerHTML = `<div class="bewoner-foto">${b.emoji}</div><div class="naam">${b.naam}</div>`;
+    card.onclick = () => {
+      huidigeBewoner = b.id;
+      renderAlles();
+    };
+    cont.appendChild(card);
+  });
+}
+
+function renderGreeting() {
+  const b = getBewoner();
+  document.getElementById('greet-foto').textContent = b.emoji;
+  document.getElementById('greet-naam').textContent = `Hallo ${b.naam}!`;
+  const dagen = ['Zondag','Maandag','Dinsdag','Woensdag','Donderdag','Vrijdag','Zaterdag'];
+  const maanden = ['januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'];
+  const nu = new Date();
+  document.getElementById('greet-datum').textContent =
+    `${dagen[nu.getDay()]} ${nu.getDate()} ${maanden[nu.getMonth()]} ${nu.getFullYear()}`;
+}
+
+function renderTaken() {
+  const grid = document.getElementById('taken-grid');
+  grid.innerHTML = '';
+  const b = getBewoner();
+  const taken = b.taken.slice().sort((a,b) => tijdNaarMin(a.tijd) - tijdNaarMin(b.tijd));
+
+  taken.forEach(taak => {
+    const status = getTaakStatus(taak);
+    const card = document.createElement('div');
+    card.className = 'taak-card ' + status;
+
+    let statusEl = '';
+    if (status === 'klaar') {
+      statusEl = '<div class="taak-status">✓</div>';
+    } else if (status === 'nu') {
+      statusEl = '<div class="taak-status">nu</div>';
+    } else if (status === 'gemist') {
+      statusEl = '<div class="taak-status" style="background:#c84040;color:white;">!</div>';
+    } else {
+      statusEl = '<div class="taak-status"></div>';
+    }
+
+    card.innerHTML = `
+      <div class="taak-tijd">${taak.tijd}</div>
+      <div class="taak-picto">
+        ${PICTOS[taak.picto] || PICTOS.eten}
+        <div class="picto-label">${taak.picto}</div>
+      </div>
+      <div class="taak-naam">${taak.naam}</div>
+      ${statusEl}
+    `;
+    card.onclick = () => openTaakModal(taak);
+    grid.appendChild(card);
+  });
+}
+
+function renderEmoties() {
+  const cont = document.getElementById('emoties-rij');
+  cont.innerHTML = '';
+  const emoties = [
+    { id: 'super', label: 'Super', kleur: '#289050', emoji: '😄' },
+    { id: 'goed', label: 'Goed', kleur: '#88c050', emoji: '🙂' },
+    { id: 'oké', label: 'Oké', kleur: '#f0c830', emoji: '😐' },
+    { id: 'niet-zo', label: 'Niet zo', kleur: '#f08c30', emoji: '😕' },
+    { id: 'slecht', label: 'Slecht', kleur: '#c84040', emoji: '😢' }
+  ];
+
+  const huidigeKey = huidigeBewoner + '-laatste';
+  const huidige = dagState.emoties[huidigeKey];
+
+  emoties.forEach(e => {
+    const btn = document.createElement('button');
+    btn.className = 'emotie-knop' + (huidige === e.id ? ' geselecteerd' : '');
+    btn.innerHTML = `
+      <div class="emotie-cirkel" style="background:${e.kleur}">${e.emoji}</div>
+      <div class="label">${e.label}</div>
+    `;
+    btn.onclick = () => {
+      dagState.emoties[huidigeKey] = e.id;
+      const tijdKey = huidigeBewoner + '-log';
+      if (!dagState.emoties[tijdKey]) dagState.emoties[tijdKey] = [];
+      dagState.emoties[tijdKey].push({ tijd: new Date().toISOString(), emotie: e.id });
+      bewaarDagState();
+      renderEmoties();
+      const bedankt = document.getElementById('emotie-bedankt');
+      bedankt.classList.add('zichtbaar');
+      setTimeout(() => bedankt.classList.remove('zichtbaar'), 2500);
+    };
+    cont.appendChild(btn);
+  });
+}
+
+/* =========================================================
+   TAAK MODAL
+   ========================================================= */
+function openTaakModal(taak) {
+  document.getElementById('modal-titel').textContent = taak.tijd + ' — ' + taak.naam;
+  const body = document.getElementById('modal-body');
+  const taakKey = huidigeBewoner + '-' + taak.id;
+  const stappenKey = taakKey + '-stappen';
+  if (!dagState.stappen[stappenKey]) dagState.stappen[stappenKey] = {};
+
+  const status = getTaakStatus(taak);
+
+  let html = `<div class="taak-picto" style="margin: 0 auto 16px; width: 140px; height: 140px;">
+    ${PICTOS[taak.picto] || ''}
+    <div class="picto-label" style="font-size:12px;">${taak.picto}</div>
+  </div>`;
+
+  // Aftelklok als status 'nu' is
+  if (status === 'nu') {
+    const taken = getBewoner().taken.slice().sort((a,b) => tijdNaarMin(a.tijd) - tijdNaarMin(b.tijd));
+    const idx = taken.findIndex(t => t.id === taak.id);
+    const volgende = taken[idx + 1];
+    const eindMin = volgende ? tijdNaarMin(volgende.tijd) : tijdNaarMin(taak.tijd) + 60;
+    html += `<div class="timer-display">
+      <div class="timer-tijd" id="timer-display"></div>
+      <div class="timer-label">tijd over voor deze taak</div>
+    </div>`;
+
+    setTimeout(() => {
+      function updateTimer() {
+        const restMin = eindMin - huidigeTijdMin();
+        const restSec = Math.max(0, restMin * 60 - new Date().getSeconds());
+        const m = Math.floor(restSec / 60);
+        const s = restSec % 60;
+        const display = document.getElementById('timer-display');
+        if (display) {
+          display.textContent = String(Math.max(0, m)).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+      }
+      updateTimer();
+      if (actieveTimerInterval) clearInterval(actieveTimerInterval);
+      actieveTimerInterval = setInterval(updateTimer, 1000);
+    }, 50);
+  }
+
+  // Stappenplan
+  if (taak.stappen && taak.stappen.length > 0) {
+    html += '<h3 style="margin: 16px 0 12px;">Stap voor stap:</h3>';
+    taak.stappen.forEach((stap, i) => {
+      const stapKey = i;
+      const gedaan = dagState.stappen[stappenKey][stapKey];
+      html += `<div class="stap${gedaan ? ' gedaan' : ''}" data-stap="${i}">
+        <div class="stap-nr">${i + 1}</div>
+        <div class="stap-picto">${PICTOS[stap.picto] || PICTOS.eten}</div>
+        <div class="stap-tekst">${stap.tekst}</div>
+        <div class="stap-checkbox">${gedaan ? '✓' : ''}</div>
+      </div>`;
+    });
+  }
+
+  body.innerHTML = html;
+
+  // Click handlers voor stappen
+  body.querySelectorAll('.stap').forEach(el => {
+    el.onclick = () => {
+      const i = parseInt(el.dataset.stap);
+      dagState.stappen[stappenKey][i] = !dagState.stappen[stappenKey][i];
+      bewaarDagState();
+      openTaakModal(taak); // re-render
+    };
+  });
+
+  // Knoppen
+  const acties = document.getElementById('modal-acties');
+  acties.innerHTML = `
+    <button class="btn-voorlezen" id="modal-voorlees">🔊 Voorlezen</button>
+    ${status !== 'klaar'
+      ? `<button class="btn-primair" id="modal-klaar">✓ Taak klaar!</button>`
+      : `<button class="btn-secundair" id="modal-undo">Toch nog niet klaar</button>`
+    }
+  `;
+
+  document.getElementById('modal-voorlees').onclick = () => {
+    let tekst = `${taak.tijd}, ${taak.naam}. `;
+    if (taak.stappen) {
+      taak.stappen.forEach((s, i) => { tekst += `Stap ${i+1}: ${s.tekst}. `; });
+    }
+    spreekUit(tekst);
+  };
+
+  if (status !== 'klaar') {
+    document.getElementById('modal-klaar').onclick = () => {
+      dagState.afgevinkt[taakKey] = true;
+      bewaarDagState();
+      sluitModal();
+      renderTaken();
+      // Mooi belletje
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = 880; g.gain.value = 0.1;
+        o.start(); o.frequency.exponentialRampToValueAtTime(1320, ctx.currentTime + 0.15);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        o.stop(ctx.currentTime + 0.4);
+      } catch (e) {}
+    };
+  } else {
+    document.getElementById('modal-undo').onclick = () => {
+      delete dagState.afgevinkt[taakKey];
+      bewaarDagState();
+      sluitModal();
+      renderTaken();
+    };
+  }
+
+  document.getElementById('taak-modal-bg').classList.add('zichtbaar');
+}
+
+function sluitModal() {
+  document.getElementById('taak-modal-bg').classList.remove('zichtbaar');
+  if (actieveTimerInterval) {
+    clearInterval(actieveTimerInterval);
+    actieveTimerInterval = null;
+  }
+}
+
+/* =========================================================
+   SPRAAK
+   ========================================================= */
+function spreekUit(tekst) {
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(tekst);
+    u.lang = 'nl-NL';
+    u.rate = 0.85;
+    u.pitch = 1.0;
+    window.speechSynthesis.speak(u);
+  } else {
+    alert('Voorlezen wordt niet ondersteund in deze browser.');
+  }
+}
+
+function leesAllesVoor() {
+  const b = getBewoner();
+  const taken = b.taken.slice().sort((a,b) => tijdNaarMin(a.tijd) - tijdNaarMin(b.tijd));
+  let tekst = `Hallo ${b.naam}. Dit ga jij vandaag doen. `;
+  taken.forEach(t => {
+    const taakKey = huidigeBewoner + '-' + t.id;
+    const status = dagState.afgevinkt[taakKey] ? 'Klaar! ' : '';
+    tekst += `Om ${t.tijd.replace(':', ' uur ')}: ${t.naam}. ${status}`;
+  });
+  spreekUit(tekst);
+}
+
+/* =========================================================
+   BEGELEIDER MODUS
+   ========================================================= */
+function renderBegeleiderPanel() {
+  const b = getBewoner();
+  document.getElementById('begeleider-bewonernaam').textContent = b.naam;
+  const cont = document.getElementById('taken-bewerker');
+  cont.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'form-row';
+  header.style.fontWeight = '700';
+  header.style.fontSize = '13px';
+  header.style.color = '#707070';
+  header.innerHTML = '<div>Tijd</div><div>Naam</div><div>Picto</div><div></div><div></div>';
+  cont.appendChild(header);
+
+  b.taken.slice().sort((a,b) => tijdNaarMin(a.tijd) - tijdNaarMin(b.tijd)).forEach(taak => {
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    let pictoOpts = PICTO_OPTIES.map(p => `<option value="${p}"${p === taak.picto ? ' selected' : ''}>${p}</option>`).join('');
+    row.innerHTML = `
+      <input type="time" value="${taak.tijd}" data-veld="tijd" data-id="${taak.id}">
+      <input type="text" value="${taak.naam}" data-veld="naam" data-id="${taak.id}">
+      <select data-veld="picto" data-id="${taak.id}">${pictoOpts}</select>
+      <div></div>
+      <button class="verwijder" data-id="${taak.id}">✕</button>
+    `;
+    cont.appendChild(row);
+  });
+
+  // Listeners
+  cont.querySelectorAll('input, select').forEach(input => {
+    input.oninput = (e) => {
+      const id = e.target.dataset.id;
+      const veld = e.target.dataset.veld;
+      const taak = b.taken.find(t => t.id === id);
+      if (taak) {
+        taak[veld] = e.target.value;
+        bewaarGegevens();
+        renderTaken();
+      }
+    };
+  });
+  cont.querySelectorAll('.verwijder').forEach(btn => {
+    btn.onclick = (e) => {
+      const id = e.target.dataset.id;
+      if (confirm('Deze taak verwijderen?')) {
+        b.taken = b.taken.filter(t => t.id !== id);
+        bewaarGegevens();
+        renderBegeleiderPanel();
+        renderTaken();
+      }
+    };
+  });
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+function renderAlles() {
+  renderBewonerSelector();
+  renderGreeting();
+  renderTaken();
+  renderEmoties();
+  if (modus === 'begeleider') renderBegeleiderPanel();
+  updateKlok();
+}
+
+function init() {
+  // Mode buttons
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      modus = btn.dataset.mode;
+      const panel = document.getElementById('begeleider-panel');
+      if (modus === 'begeleider') {
+        panel.classList.remove('hidden');
+        renderBegeleiderPanel();
+      } else {
+        panel.classList.add('hidden');
+      }
+    };
+  });
+
+  // Modal close
+  document.getElementById('modal-close-btn').onclick = sluitModal;
+  document.getElementById('taak-modal-bg').onclick = (e) => {
+    if (e.target.id === 'taak-modal-bg') sluitModal();
+  };
+
+  // Voorlees knop
+  document.getElementById('voorlees-btn').onclick = leesAllesVoor;
+
+  // Hulp en bel knoppen
+  document.querySelector('.actie-btn.hulp').onclick = () => {
+    spreekUit('Ik heb hulp nodig');
+    alert('De begeleider is op de hoogte gebracht!\n\n(In een echte versie krijgt de begeleider hier een melding op de telefoon.)');
+  };
+  document.querySelector('.actie-btn.bellen').onclick = () => {
+    if (confirm('Wil je de begeleider bellen?')) {
+      alert('Belt de begeleider...\n\n(In een echte versie wordt hier echt gebeld.)');
+    }
+  };
+
+  // Taak toevoegen
+  document.getElementById('taak-toevoegen-btn').onclick = () => {
+    const b = getBewoner();
+    const newId = 't' + Date.now();
+    b.taken.push({
+      id: newId,
+      tijd: '12:00',
+      naam: 'Nieuwe taak',
+      picto: 'eten',
+      stappen: [{ tekst: 'Stap 1', picto: 'eten' }]
+    });
+    bewaarGegevens();
+    renderBegeleiderPanel();
+    renderTaken();
+  };
+
+  // Reset
+  document.getElementById('reset-btn').onclick = () => {
+    if (confirm('Weet je zeker dat je ALLE gegevens wilt wissen?\n\nAlle aangepaste taken, vinkjes en emoties gaan verloren.')) {
+      localStorage.removeItem(STORAGE_KEY);
+      // Alle dag-keys verwijderen
+      Object.keys(localStorage).forEach(k => {
+        if (k.startsWith('mijn-eigen-plan-dag-')) localStorage.removeItem(k);
+      });
+      state = JSON.parse(JSON.stringify(STARTGEGEVENS));
+      dagState = { afgevinkt: {}, stappen: {}, emoties: {} };
+      huidigeBewoner = state.bewoners[0].id;
+      renderAlles();
+    }
+  };
+
+  // Initial render
+  renderAlles();
+
+  // Klok elke seconde
+  setInterval(updateKlok, 1000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
