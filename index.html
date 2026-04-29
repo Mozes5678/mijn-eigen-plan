@@ -183,15 +183,15 @@
   }
   .begeleider-chip.vrijwilliger { border-style: dashed; }
   .begeleider-foto {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
-    color: white;
-    font-weight: 700;
+    font-size: 22px;
+    flex-shrink: 0;
+    line-height: 1;
   }
   .begeleider-chip .naam {
     font-weight: 600;
@@ -976,10 +976,27 @@
     <div class="panel-content" id="panel-instellingen">
       <h2>Instellingen</h2>
       <p class="uitleg">Beheer de gegevens van deze app.</p>
-      <button class="reset-btn" id="reset-btn">🗑️ Alle data wissen (reset)</button>
-      <p style="margin-top: 16px; font-size: 13px; color: #707070;">
-        Dit wist alle aangepaste taken, begeleiders, vinkjes en emotie-geschiedenis.
-      </p>
+
+      <div style="background: white; border: 1px solid #e5e5e0; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+        <h3 style="margin-bottom: 8px; font-size: 18px;">📊 Demo-data laden</h3>
+        <p style="font-size: 13px; color: #707070; margin-bottom: 12px;">
+          Vul de inzichten met realistische voorbeelddata over de afgelopen 4 weken.
+          Handig om aan je werkbegeleider of docent te laten zien hoe de inzichten eruit zien
+          als de app echt gebruikt wordt.
+        </p>
+        <button class="toevoegen-btn" id="demo-data-btn" style="background: #2d6cdf;">
+          ✨ Demo-data laden voor inzichten
+        </button>
+      </div>
+
+      <div style="background: white; border: 1px solid #e5e5e0; border-radius: 12px; padding: 20px;">
+        <h3 style="margin-bottom: 8px; font-size: 18px;">🗑️ Alles wissen</h3>
+        <p style="font-size: 13px; color: #707070; margin-bottom: 12px;">
+          Wist alle aangepaste taken, begeleiders, vinkjes en emotie-geschiedenis.
+          De app start opnieuw met de standaardgegevens.
+        </p>
+        <button class="reset-btn" id="reset-btn" style="margin: 0;">🗑️ Alles wissen (reset)</button>
+      </div>
     </div>
   </div>
 
@@ -1190,12 +1207,14 @@ const STARTGEGEVENS = {
     }
   ],
   begeleiders: [
-    { id: 'b1', naam: 'Sofie',  initialen: 'SO', kleur: '#e87aa3', rol: 'persoonlijk begeleider' },
-    { id: 'b2', naam: 'Jet',    initialen: 'JE', kleur: '#f0a030', rol: 'woonbegeleider' },
-    { id: 'b3', naam: 'Mirthe', initialen: 'MI', kleur: '#7aa3e8', rol: 'stagiaire' },
-    { id: 'b4', naam: 'Klaas',  initialen: 'KL', kleur: '#7ae8a3', rol: 'vrijwilliger' },
-    { id: 'b5', naam: 'Anneke', initialen: 'AN', kleur: '#b87ae8', rol: 'dagbestedingsbegeleider' }
-  ]
+    { id: 'b1', naam: 'Sofie',  emoji: '👩‍🦰', kleur: '#e87aa3', rol: 'persoonlijk begeleider' },
+    { id: 'b2', naam: 'Jet',    emoji: '👱‍♀️', kleur: '#f0a030', rol: 'woonbegeleider' },
+    { id: 'b3', naam: 'Mirthe', emoji: '👩',    kleur: '#7aa3e8', rol: 'stagiaire' },
+    { id: 'b4', naam: 'Klaas',  emoji: '👨',    kleur: '#7ae8a3', rol: 'vrijwilliger' },
+    { id: 'b5', naam: 'Anneke', emoji: '👩‍🦱', kleur: '#b87ae8', rol: 'dagbestedingsbegeleider' }
+  ],
+  /* Emoji opties die een begeleider kan kiezen */
+  begeleiderEmojiOpties: ['👩','👨','👩‍🦰','👨‍🦰','👩‍🦱','👨‍🦱','👱‍♀️','👱','👩‍🦳','👨‍🦳','👩‍🦲','👨‍🦲','🧑','🧓','👵','👴','👩‍⚕️','👨‍⚕️','🧑‍⚕️']
 };
 
 /* =========================================================
@@ -1446,7 +1465,22 @@ function laadGegevens() {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
       const parsed = JSON.parse(data);
-      if (parsed.bewoners && parsed.bewoners.length > 0 && parsed.begeleiders) return parsed;
+      if (parsed.bewoners && parsed.bewoners.length > 0 && parsed.begeleiders) {
+        // Migratie: oude begeleiders met 'initialen' upgraden naar 'emoji'
+        const standaardEmojis = ['👩','👨','👱‍♀️','👩‍🦰','👨‍🦰','👩‍🦱','👨‍🦱','🧑'];
+        let gemigreerd = false;
+        parsed.begeleiders.forEach((b, i) => {
+          if (!b.emoji) {
+            b.emoji = standaardEmojis[i % standaardEmojis.length];
+            delete b.initialen;
+            gemigreerd = true;
+          }
+        });
+        if (gemigreerd) {
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed)); } catch(e) {}
+        }
+        return parsed;
+      }
     }
   } catch (e) { console.warn('Kon gegevens niet laden:', e); }
   return JSON.parse(JSON.stringify(STARTGEGEVENS));
@@ -1595,7 +1629,7 @@ function renderBegeleidersBar() {
     const chip = document.createElement('div');
     chip.className = 'begeleider-chip' + (b.rol === 'vrijwilliger' ? ' vrijwilliger' : '');
     chip.innerHTML = `
-      <div class="begeleider-foto" style="background:${b.kleur}">${b.initialen}</div>
+      <div class="begeleider-foto" style="background:${b.kleur}">${b.emoji}</div>
       <div>
         <div class="naam">${b.naam}</div>
         <div class="rol">${b.rol}</div>
@@ -2045,7 +2079,7 @@ function renderBegeleidersBeheerPanel() {
   header.style.fontWeight = '700';
   header.style.fontSize = '13px';
   header.style.color = '#707070';
-  header.innerHTML = '<div>Naam</div><div>Rol</div><div>Initialen</div><div>Vandaag aanwezig?</div><div></div>';
+  header.innerHTML = '<div>Naam</div><div>Rol</div><div>Emoji</div><div>Vandaag aanwezig?</div><div></div>';
   cont.appendChild(header);
 
   if (state.begeleiders.length === 0) {
@@ -2053,16 +2087,22 @@ function renderBegeleidersBeheerPanel() {
     return;
   }
 
+  const emojiOpties = STARTGEGEVENS.begeleiderEmojiOpties || ['👩','👨'];
+
   state.begeleiders.forEach(b => {
     const row = document.createElement('div');
     row.className = 'begeleider-beheer-rij';
     const aanwezig = dagState.begeleidersAanwezig.includes(b.id);
     const rolOpties = ['persoonlijk begeleider', 'woonbegeleider', 'dagbestedingsbegeleider', 'stagiaire', 'vrijwilliger'];
     const rolHtml = rolOpties.map(r => `<option value="${r}"${r === b.rol ? ' selected' : ''}>${r}</option>`).join('');
+    // Zorg dat huidige emoji in de lijst staat (anders niet selecteerbaar)
+    const huidigeEmoji = b.emoji || '👩';
+    const allEmojis = emojiOpties.includes(huidigeEmoji) ? emojiOpties : [huidigeEmoji, ...emojiOpties];
+    const emojiHtml = allEmojis.map(e => `<option value="${e}"${e === huidigeEmoji ? ' selected' : ''}>${e}</option>`).join('');
     row.innerHTML = `
       <input type="text" value="${b.naam.replace(/"/g, '&quot;')}" data-veld="naam" data-id="${b.id}">
       <select data-veld="rol" data-id="${b.id}">${rolHtml}</select>
-      <input type="text" value="${b.initialen}" data-veld="initialen" data-id="${b.id}" maxlength="3" style="text-align:center;">
+      <select data-veld="emoji" data-id="${b.id}" style="font-size:20px; text-align:center;">${emojiHtml}</select>
       <label class="vandaag-checkbox">
         <input type="checkbox" data-id="${b.id}" data-actie="vandaag" ${aanwezig ? 'checked' : ''}>
         <span>${aanwezig ? '✓ Aanwezig' : 'Niet aanwezig'}</span>
@@ -2083,6 +2123,7 @@ function renderBegeleidersBeheerPanel() {
         renderBegeleidersBar();
       }
     };
+    input.onchange = input.oninput; // ook voor select bij keuze
   });
   cont.querySelectorAll('input[type="checkbox"]').forEach(cb => {
     cb.onchange = (e) => {
@@ -2232,6 +2273,159 @@ function renderInzichten() {
       renderInzichten();
     };
   });
+}
+
+/* =========================================================
+   DEMO-DATA GENERATOR
+   Maakt realistische emotie-data over 4 weken met patronen:
+   - Marieke: ochtend lastig, middag oké, avond goed, weekend beter
+   - Tim: stabiel-positief, kleine dipjes op maandagochtend
+   - Sanne: wisselend, meer ups en downs door de week
+   ========================================================= */
+function genereerDemoData() {
+  const log = {};
+  const nu = new Date();
+  const dagenTerug = 28; // 4 weken
+
+  // Helper: pak een willekeurige emotie op basis van een score-target (1-5)
+  // Met wat ruis erbij zodat het natuurlijk lijkt
+  function emotieVoorScore(target) {
+    // Map score naar emotie-id (5 = super, 1 = slecht)
+    const ruis = (Math.random() - 0.5) * 1.4; // -0.7 tot +0.7
+    const score = Math.max(1, Math.min(5, Math.round(target + ruis)));
+    const map = { 5: 'super', 4: 'goed', 3: 'oke', 2: 'niet-zo', 1: 'slecht' };
+    return map[score];
+  }
+
+  // Helper: maak een tijdstempel voor een specifiek moment op een specifieke dag
+  function tijdstempel(daysAgo, uur, minuut) {
+    const d = new Date(nu);
+    d.setDate(nu.getDate() - daysAgo);
+    d.setHours(uur, minuut + Math.floor(Math.random() * 20), 0, 0);
+    return d.toISOString();
+  }
+
+  // === MARIEKE: ochtend lastig, middag oké, avond goed; weekend beter ===
+  log.marieke = [];
+  for (let d = dagenTerug; d >= 0; d--) {
+    const datum = new Date(nu);
+    datum.setDate(nu.getDate() - d);
+    const isWeekend = datum.getDay() === 0 || datum.getDay() === 6;
+    const weekendBonus = isWeekend ? 0.8 : 0;
+
+    // Niet elke dag een meting, soms overslaan
+    if (Math.random() < 0.15) continue;
+
+    // Ochtendmeting (rond 9 uur) — lastig voor Marieke
+    if (Math.random() > 0.2) {
+      log.marieke.push({
+        tijd: tijdstempel(d, 9, 0),
+        emotie: emotieVoorScore(2.3 + weekendBonus)
+      });
+    }
+    // Middagmeting (rond 13 uur) — oké
+    if (Math.random() > 0.3) {
+      log.marieke.push({
+        tijd: tijdstempel(d, 13, 0),
+        emotie: emotieVoorScore(3.4 + weekendBonus)
+      });
+    }
+    // Avondmeting (rond 18 uur) — goed
+    if (Math.random() > 0.4) {
+      log.marieke.push({
+        tijd: tijdstempel(d, 18, 0),
+        emotie: emotieVoorScore(4.0 + weekendBonus * 0.5)
+      });
+    }
+  }
+
+  // === TIM: stabiel-positief, dipjes op maandagochtend ===
+  log.tim = [];
+  for (let d = dagenTerug; d >= 0; d--) {
+    const datum = new Date(nu);
+    datum.setDate(nu.getDate() - d);
+    const isMaandag = datum.getDay() === 1;
+
+    if (Math.random() < 0.2) continue;
+
+    // Ochtend
+    if (Math.random() > 0.3) {
+      const target = isMaandag ? 2.5 : 4.0;
+      log.tim.push({
+        tijd: tijdstempel(d, 9, 30),
+        emotie: emotieVoorScore(target)
+      });
+    }
+    // Middag — stabiel goed
+    if (Math.random() > 0.3) {
+      log.tim.push({
+        tijd: tijdstempel(d, 14, 0),
+        emotie: emotieVoorScore(4.1)
+      });
+    }
+    // Avond — goed
+    if (Math.random() > 0.5) {
+      log.tim.push({
+        tijd: tijdstempel(d, 19, 0),
+        emotie: emotieVoorScore(4.0)
+      });
+    }
+  }
+
+  // === SANNE: wisselend, meer ups en downs ===
+  log.sanne = [];
+  for (let d = dagenTerug; d >= 0; d--) {
+    const datum = new Date(nu);
+    datum.setDate(nu.getDate() - d);
+
+    if (Math.random() < 0.1) continue;
+
+    // Wisselend patroon: golfbeweging over de dagen
+    const golf = Math.sin((dagenTerug - d) / 4) * 1.0; // -1 tot +1
+
+    // Ochtend
+    if (Math.random() > 0.25) {
+      log.sanne.push({
+        tijd: tijdstempel(d, 9, 15),
+        emotie: emotieVoorScore(3.3 + golf)
+      });
+    }
+    // Middag
+    if (Math.random() > 0.3) {
+      log.sanne.push({
+        tijd: tijdstempel(d, 13, 30),
+        emotie: emotieVoorScore(3.5 + golf * 0.7)
+      });
+    }
+    // Avond
+    if (Math.random() > 0.4) {
+      log.sanne.push({
+        tijd: tijdstempel(d, 18, 30),
+        emotie: emotieVoorScore(3.4 + golf * 0.5)
+      });
+    }
+  }
+
+  // Sorteer op tijd
+  Object.keys(log).forEach(k => {
+    log[k].sort((a, b) => new Date(a.tijd) - new Date(b.tijd));
+  });
+
+  return log;
+}
+
+function ladenDemoData() {
+  const demo = genereerDemoData();
+  const totaalAantal = Object.values(demo).reduce((s, arr) => s + arr.length, 0);
+
+  if (!confirm(`Demo-data laden? Dit voegt ${totaalAantal} emotie-metingen toe over de afgelopen 4 weken voor alle bewoners.\n\nBestaande emotie-geschiedenis wordt vervangen.`)) {
+    return;
+  }
+
+  emotieLog = demo;
+  bewaarEmotieLog();
+  alert(`✓ Demo-data geladen!\n\n${totaalAantal} metingen toegevoegd.\n\nGa nu naar het tabblad "Inzichten" om het te bekijken.`);
+  if (actiefPanel === 'inzichten') renderInzichten();
 }
 
 function maakTrendGrafiek(log, dagenTerug) {
@@ -2429,10 +2623,11 @@ function init() {
   document.getElementById('begeleider-toevoegen-btn').onclick = () => {
     const newId = 'b' + Date.now();
     const kleuren = ['#e87aa3','#f0a030','#7aa3e8','#7ae8a3','#b87ae8','#e8c87a','#7ae8e0'];
+    const standaardEmojis = ['👩','👨','👱‍♀️','👩‍🦰','👨‍🦰'];
     state.begeleiders.push({
       id: newId,
       naam: 'Nieuwe begeleider',
-      initialen: 'NB',
+      emoji: standaardEmojis[state.begeleiders.length % standaardEmojis.length],
       kleur: kleuren[state.begeleiders.length % kleuren.length],
       rol: 'persoonlijk begeleider'
     });
@@ -2440,6 +2635,9 @@ function init() {
     renderBegeleidersBeheerPanel();
     renderBegeleidersBar();
   };
+
+  // Demo data laden
+  document.getElementById('demo-data-btn').onclick = ladenDemoData;
 
   // Reset
   document.getElementById('reset-btn').onclick = () => {
